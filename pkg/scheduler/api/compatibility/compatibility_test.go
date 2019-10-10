@@ -67,7 +67,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"MatchNodeSelector",
 				"PodFitsResources",
 				"PodFitsPorts",
-				"NoDiskConflict",
 				"TestServiceAffinity",
 				"TestLabelsPresence",
 			),
@@ -76,6 +75,9 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"ServiceSpreadingPriority",
 				"TestServiceAntiAffinity",
 				"TestLabelPreference",
+			),
+			wantFilterPlugins: sets.NewString(
+				"NoDiskConflict",
 			),
 		},
 
@@ -106,7 +108,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"MatchNodeSelector",
 				"PodFitsHostPorts",
 				"PodFitsResources",
-				"NoDiskConflict",
 				"HostName",
 				"TestServiceAffinity",
 				"TestLabelsPresence",
@@ -118,6 +119,9 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"SelectorSpreadPriority",
 				"TestServiceAntiAffinity",
 				"TestLabelPreference",
+			),
+			wantFilterPlugins: sets.NewString(
+				"NoDiskConflict",
 			),
 		},
 
@@ -155,7 +159,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"MaxEBSVolumeCount",
 				"MaxGCEPDVolumeCount",
@@ -172,6 +175,9 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"SelectorSpreadPriority",
 				"TestServiceAntiAffinity",
 				"TestLabelPreference",
+			),
+			wantFilterPlugins: sets.NewString(
+				"NoDiskConflict",
 			),
 		},
 
@@ -213,7 +219,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"MaxEBSVolumeCount",
@@ -236,6 +241,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 		},
 
@@ -280,7 +286,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"CheckNodeDiskPressure",
@@ -306,6 +311,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 		},
 		// Do not change this JSON after the corresponding release has been tagged.
@@ -359,7 +365,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"CheckNodeDiskPressure",
@@ -385,6 +390,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 			wantExtenders: []schedulerapi.ExtenderConfig{{
 				URLPrefix:        "/prefix",
@@ -450,7 +456,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"CheckNodeDiskPressure",
@@ -477,6 +482,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 			wantExtenders: []schedulerapi.ExtenderConfig{{
 				URLPrefix:        "/prefix",
@@ -543,7 +549,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"CheckNodeDiskPressure",
@@ -571,6 +576,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 			wantExtenders: []schedulerapi.ExtenderConfig{{
 				URLPrefix:        "/prefix",
@@ -641,7 +647,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"CheckNodeDiskPressure",
@@ -670,6 +675,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 			wantExtenders: []schedulerapi.ExtenderConfig{{
 				URLPrefix:        "/prefix",
@@ -752,7 +758,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"CheckNodeDiskPressure",
@@ -782,6 +787,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 			wantExtenders: []schedulerapi.ExtenderConfig{{
 				URLPrefix:        "/prefix",
@@ -865,7 +871,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"CheckNodeDiskPressure",
@@ -896,6 +901,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 			wantExtenders: []schedulerapi.ExtenderConfig{{
 				URLPrefix:        "/prefix",
@@ -978,7 +984,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"CheckNodeDiskPressure",
@@ -1010,6 +1015,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 			wantExtenders: []schedulerapi.ExtenderConfig{{
 				URLPrefix:        "/prefix",
@@ -1096,7 +1102,6 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 				"PodFitsResources",
 				"PodFitsHostPorts",
 				"HostName",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 				"CheckNodeMemoryPressure",
 				"CheckNodeDiskPressure",
@@ -1128,6 +1133,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 			),
 			wantFilterPlugins: sets.NewString(
 				"TaintToleration",
+				"NoDiskConflict",
 			),
 			wantExtenders: []schedulerapi.ExtenderConfig{{
 				URLPrefix:        "/prefix",
@@ -1151,6 +1157,7 @@ func TestCompatibility_v1_Scheduler(t *testing.T) {
 	mandatoryPredicates := sets.NewString("CheckNodeCondition")
 	filterToPredicateMap := map[string]string{
 		"TaintToleration": "PodToleratesNodeTaints",
+		"NoDiskConflict":  "NoDiskConflict",
 	}
 
 	for v, tc := range schedulerFiles {

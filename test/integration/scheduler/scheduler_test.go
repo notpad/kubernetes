@@ -137,7 +137,6 @@ func TestSchedulerCreationFromConfigMap(t *testing.T) {
 				"MaxCSIVolumeCountPred",
 				"MaxEBSVolumeCount",
 				"MaxGCEPDVolumeCount",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 			),
 			expectedPrioritizers: sets.NewString(
@@ -151,7 +150,10 @@ func TestSchedulerCreationFromConfigMap(t *testing.T) {
 				"ImageLocalityPriority",
 			),
 			expectedPlugins: map[string][]string{
-				"FilterPlugin": {"TaintToleration"},
+				"FilterPlugin": {
+					"NoDiskConflict",
+					"TaintToleration",
+				},
 			},
 		},
 		{
@@ -204,7 +206,6 @@ kind: Policy
 				"MaxCSIVolumeCountPred",
 				"MaxEBSVolumeCount",
 				"MaxGCEPDVolumeCount",
-				"NoDiskConflict",
 				"NoVolumeZoneConflict",
 			),
 			expectedPrioritizers: sets.NewString(
@@ -218,7 +219,10 @@ kind: Policy
 				"ImageLocalityPriority",
 			),
 			expectedPlugins: map[string][]string{
-				"FilterPlugin": {"TaintToleration"},
+				"FilterPlugin": {
+					"NoDiskConflict",
+					"TaintToleration",
+				},
 			},
 		},
 		{

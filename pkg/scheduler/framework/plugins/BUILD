@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//pkg/scheduler/algorithm/predicates:go_default_library",
         "//pkg/scheduler/apis/config:go_default_library",
+        "//pkg/scheduler/framework/plugins/nodiskconflict:go_default_library",
         "//pkg/scheduler/framework/plugins/tainttoleration:go_default_library",
         "//pkg/scheduler/framework/v1alpha1:go_default_library",
     ],
@@ -26,6 +27,7 @@ filegroup(
         ":package-srcs",
         "//pkg/scheduler/framework/plugins/examples:all-srcs",
         "//pkg/scheduler/framework/plugins/migration:all-srcs",
+        "//pkg/scheduler/framework/plugins/nodiskconflict:all-srcs",
         "//pkg/scheduler/framework/plugins/noop:all-srcs",
         "//pkg/scheduler/framework/plugins/tainttoleration:all-srcs",
     ],
