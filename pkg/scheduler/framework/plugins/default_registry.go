@@ -253,6 +253,12 @@ func NewDefaultConfigProducerRegistry() *ConfigProducerRegistry {
 			return
 		})
 
+	registry.RegisterPriority(nodelabel.Name,
+		func(args ConfigProducerArgs) (plugins config.Plugins, pluginConfig []config.PluginConfig) {
+			plugins.Score = appendToPluginSet(plugins.Score, nodelabel.Name, &args.Weight)
+			pluginConfig = append(pluginConfig, makePluginConfig(nodelabel.Name, args.NodeLabelArgs))
+			return
+		})
 	return registry
 }
 
@@ -284,4 +290,17 @@ func appendToPluginSet(set *config.PluginSet, name string, weight *int32) *confi
 	}
 	set.Enabled = append(set.Enabled, cfg)
 	return set
+}
+
+func makePluginConfig(pluginName string, args interface{}) config.PluginConfig {
+	encoding, err := json.Marshal(args)
+	if err != nil {
+		klog.Fatal(fmt.Errorf("Failed to marshal %+v: %v", args, err))
+		return config.PluginConfig{}
+	}
+	config := config.PluginConfig{
+		Name: pluginName,
+		Args: runtime.Unknown{Raw: encoding},
+	}
+	return config
 }

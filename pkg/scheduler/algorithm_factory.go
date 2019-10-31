@@ -287,7 +287,7 @@ func RegisterCustomFitPredicate(policy schedulerapi.PredicatePolicy, args *plugi
 			// map LabelPresence policy to ConfigProducerArgs that's used to configure the NodeLabel plugin.
 			args.NodeLabelArgs = &nodelabel.Args{
 				Labels:   policy.Argument.LabelsPresence.Labels,
-				Presence: policy.Argument.LabelsPresence.Presence,
+				LabelsPresence: policy.Argument.LabelsPresence.Presence,
 			}
 			predicateFactory = func(args PluginFactoryArgs) predicates.FitPredicate {
 				return predicates.NewNodeLabelPredicate(
@@ -372,7 +372,7 @@ func RegisterPriorityConfigFactory(name string, pcf PriorityConfigFactory) strin
 
 // RegisterCustomPriorityFunction registers a custom priority function with the algorithm registry.
 // Returns the name, with which the priority function was registered.
-func RegisterCustomPriorityFunction(policy schedulerapi.PriorityPolicy) string {
+func RegisterCustomPriorityFunction(policy schedulerapi.PriorityPolicy, args *plugins.ConfigProducerArgs) string {
 	var pcf *PriorityConfigFactory
 
 	validatePriorityOrDie(policy)
@@ -391,6 +391,10 @@ func RegisterCustomPriorityFunction(policy schedulerapi.PriorityPolicy) string {
 				Weight: policy.Weight,
 			}
 		} else if policy.Argument.LabelPreference != nil {
+			args.NodeLabelArgs = &nodelabel.Args{
+				Label:   policy.Argument.LabelPreference.Label,
+				LabelPresence: policy.Argument.LabelPreference.Presence,
+			}
 			pcf = &PriorityConfigFactory{
 				MapReduceFunction: func(args PluginFactoryArgs) (priorities.PriorityMapFunction, priorities.PriorityReduceFunction) {
 					return priorities.NewNodeLabelPriority(

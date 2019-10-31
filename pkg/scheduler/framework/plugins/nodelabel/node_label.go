@@ -18,6 +18,7 @@ package nodelabel
 
 import (
 	"context"
+	"fmt"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,6 +26,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/framework/plugins/migration"
 	framework "k8s.io/kubernetes/pkg/scheduler/framework/v1alpha1"
 	"k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	"k8s.io/kubernetes/pkg/scheduler/algorithm/priorities"
 )
 
 // Name of this plugin.
@@ -36,26 +38,34 @@ type Args struct {
 	// All of the labels should be either present (or absent) for the node to be considered a fit for hosting the pod
 	Labels []string `json:"labels,omitempty"`
 	// The boolean flag that indicates whether the labels should be present or absent from the node
-	Presence bool `json:"presence,omitempty"`
+	LabelsPresence bool `json:"labels_presence,omitempty"`
+	Label string `json:"label,omitempty"`
+	LabelPresence bool `json:"label_presence,omitempty"`
 }
 
 // New initializes a new plugin and returns it.
-func New(plArgs *runtime.Unknown, _ framework.FrameworkHandle) (framework.Plugin, error) {
+func New(plArgs *runtime.Unknown, handle framework.FrameworkHandle) (framework.Plugin, error) {
 	args := &Args{}
 	if err := framework.DecodeInto(plArgs, args); err != nil {
 		return nil, err
 	}
+	priority, _ := priorities.NewNodeLabelPriority(args.Label, args.LabelPresence)
 	return &NodeLabel{
-		predicate: predicates.NewNodeLabelPredicate(args.Labels, args.Presence),
+		handle:     handle,
+		predicate: predicates.NewNodeLabelPredicate(args.Labels, args.LabelsPresence),
+		priority: priority,
 	}, nil
 }
 
 // NodeLabel checks whether a pod can fit based on the node labels which match a filter that it requests.
 type NodeLabel struct {
 	predicate predicates.FitPredicate
+	handle framework.FrameworkHandle
+	priority priorities.PriorityMapFunction
 }
 
 var _ framework.FilterPlugin = &NodeLabel{}
+var _ framework.ScorePlugin = &NodeLabel{}
 
 // Name returns name of the plugin. It is used in logs, etc.
 func (pl *NodeLabel) Name() string {
@@ -67,4 +77,19 @@ func (pl *NodeLabel) Filter(ctx context.Context, _ *framework.CycleState, pod *v
 	// Note that NodeLabelPredicate doesn't use predicate metadata, hence passing nil here.
 	_, reasons, err := pl.predicate(pod, nil, nodeInfo)
 	return migration.PredicateResultToFrameworkStatus(reasons, err)
+}
+
+// Score invoked at the score extension point.
+func (pl *NodeLabel) Score(ctx context.Context, state *framework.CycleState, pod *v1.Pod, nodeName string) (int64, *framework.Status) {
+	nodeInfo, err := pl.handle.SnapshotSharedLister().NodeInfos().Get(nodeName)
+	if err != nil {
+		return 0, framework.NewStatus(framework.Error, fmt.Sprintf("getting node %q from Snapshot: %v", nodeName, err))
+	}
+	s, err := pl.priority(pod, nil, nodeInfo)
+	return s.Score, migration.ErrorToFrameworkStatus(err)
+}
+
+// ScoreExtensions of the Score plugin.
+func (pl *NodeLabel) ScoreExtensions() framework.ScoreExtensions {
+	return nil
 }
