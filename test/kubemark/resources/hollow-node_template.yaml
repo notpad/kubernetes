@@ -56,7 +56,6 @@ spec:
         - --name=$(NODE_NAME)
         - {{hollow_kubelet_params}}
         - --kubeconfig=/kubeconfig/kubelet.kubeconfig
-        - $(CONTENT_TYPE)
         - --log-file=/var/log/kubelet-$(NODE_NAME).log
         volumeMounts:
         - name: kubeconfig-volume
@@ -88,7 +87,6 @@ spec:
         - --name=$(NODE_NAME)
         - {{hollow_proxy_params}}
         - --kubeconfig=/kubeconfig/kubeproxy.kubeconfig
-        - $(CONTENT_TYPE)
         - --log-file=/var/log/kubeproxy-$(NODE_NAME).log
         volumeMounts:
         - name: kubeconfig-volume

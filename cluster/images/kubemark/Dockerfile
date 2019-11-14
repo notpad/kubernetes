@@ -14,6 +14,6 @@
 
 # The line below points to debian:jessie as of 2019-10-23. The SHA should be
 # kept in sycn with debian_jessie definition in the WORKSPACE file.
-FROM gcr.io/distroless/base:latest
+FROM gcr.io/distroless/base:debug
 
 COPY kubemark /kubemark
