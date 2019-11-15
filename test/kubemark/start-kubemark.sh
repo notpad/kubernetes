@@ -151,9 +151,9 @@ function create-kube-hollow-node-resources {
   fi
   proxy_mem_per_node=50
   proxy_mem=$((100 * 1024 + proxy_mem_per_node*NUM_NODES))
-  hollow_kubelet_params=$(eval "for param in ${HOLLOW_KUBELET_TEST_ARGS:-}; do echo \\\"\$param\\\",; done")
+  hollow_kubelet_params=$(eval "for param in ${HOLLOW_KUBELET_TEST_ARGS:-}; do echo -n \\\"\$param\\\",; done")
   hollow_kubelet_params=${hollow_kubelet_params%?}
-  hollow_proxy_params=$(eval "for param in ${HOLLOW_PROXY_TEST_ARGS:-}; do echo \\\"\$param\\\",; done")
+  hollow_proxy_params=$(eval "for param in ${HOLLOW_PROXY_TEST_ARGS:-}; do echo -n \\\"\$param\\\",; done")
   hollow_proxy_params=${hollow_proxy_params%?}
 
   sed -i'' -e "s@{{HOLLOW_PROXY_CPU}}@${proxy_cpu}@g" "${RESOURCE_DIRECTORY}/hollow-node.yaml"
