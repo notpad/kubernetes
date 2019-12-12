@@ -1,24 +1,24 @@
-- desc: Scheduling
+- desc: SchedulingBasic
   nodes:
     num: 500
   initPods:
     num: 500
-    podTemplatePath: config/pod.yaml
+    podTemplatePath: config/pod-default.yaml
     replicationControllerName: rc1
   podsToSchedule:
     num: 1000
-    podTemplatePath: config/pod.yaml
+    podTemplatePath: config/pod-default.yaml
     replicationControllerName: rc2
-- desc: Scheduling
+- desc: SchedulingBasic
   nodes:
     num: 5000
   initPods:
     num: 5000
-    podTemplatePath: config/pod.yaml
+    podTemplatePath: config/pod-default.yaml
     replicationControllerName: rc1
   podsToSchedule:
     num: 1000
-    podTemplatePath: config/pod.yaml
+    podTemplatePath: config/pod-default.yaml
     replicationControllerName: rc2
 - desc: SchedulingPodAntiAffinity
   nodes:
@@ -82,7 +82,7 @@
 - desc: SchedulingMigratedInTreePVs
   nodes:
     num: 500
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     nodeAllocatableStrategy:
       nodeAllocatable:
         attachable-volumes-csi-ebs.csi.aws.com: 39
@@ -105,7 +105,7 @@
 - desc: SchedulingMigratedInTreePVs
   nodes:
     num: 5000
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     nodeAllocatableStrategy:
       nodeAllocatable:
         attachable-volumes-csi-ebs.csi.aws.com: 39
@@ -128,7 +128,7 @@
 - desc: SchedulingCSIPVs
   nodes:
     num: 500
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     nodeAllocatableStrategy:
       nodeAllocatable:
         attachable-volumes-csi-ebs.csi.aws.com: 39
@@ -146,7 +146,7 @@
 - desc: SchedulingCSIPVs
   nodes:
     num: 5000
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     nodeAllocatableStrategy:
       nodeAllocatable:
         attachable-volumes-csi-ebs.csi.aws.com: 39
@@ -164,7 +164,7 @@
 - desc: SchedulingPodAffinity
   nodes:
     num: 500
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     labelNodeStrategy:
       labelKey: "failure-domain.beta.kubernetes.io/zone"
       labelValue: "zone1"
@@ -177,7 +177,7 @@
 - desc: SchedulingPodAffinity
   nodes:
     num: 5000
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     labelNodeStrategy:
       labelKey: "failure-domain.beta.kubernetes.io/zone"
       labelValue: "zone1"
@@ -190,7 +190,7 @@
 - desc: SchedulingPreferredPodAffinity
   nodes:
     num: 500
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     labelNodeStrategy:
       labelKey: "failure-domain.beta.kubernetes.io/zone"
       labelValue: "zone1"
@@ -203,7 +203,7 @@
 - desc: SchedulingPreferredPodAffinity
   nodes:
     num: 5000
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     labelNodeStrategy:
       labelKey: "failure-domain.beta.kubernetes.io/zone"
       labelValue: "zone1"
@@ -216,7 +216,7 @@
 - desc: SchedulingPreferredPodAntiAffinity
   nodes:
     num: 500
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     labelNodeStrategy:
       labelKey: "failure-domain.beta.kubernetes.io/zone"
       labelValue: "zone1"
@@ -229,7 +229,7 @@
 - desc: SchedulingPreferredPodAntiAffinity
   nodes:
     num: 5000
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     labelNodeStrategy:
       labelKey: "failure-domain.beta.kubernetes.io/zone"
       labelValue: "zone1"
@@ -242,7 +242,7 @@
 - desc: SchedulingNodeAffinity
   nodes:
     num: 500
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     labelNodePrepareStrategy:
       labelKey: "failure-domain.beta.kubernetes.io/zone"
       labelValue: "zone1"
@@ -255,7 +255,7 @@
 - desc: SchedulingNodeAffinity
   nodes:
     num: 5000
-    nodeTemplatePath: config/node.yaml
+    nodeTemplatePath: config/node-default.yaml
     labelNodePrepareStrategy:
       labelKey: "failure-domain.beta.kubernetes.io/zone"
       labelValue: "zone1"

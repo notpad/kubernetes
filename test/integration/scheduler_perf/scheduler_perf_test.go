@@ -18,7 +18,11 @@ package benchmark
 
 import (
 	"fmt"
+	"sync/atomic"
+	"testing"
+	"time"
 	"io/ioutil"
+
 	v1 "k8s.io/api/core/v1"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/tools/cache"
@@ -28,16 +32,13 @@ import (
 	"k8s.io/kubernetes/test/integration/framework"
 	testutils "k8s.io/kubernetes/test/utils"
 	"sigs.k8s.io/yaml"
-	"sync/atomic"
-	"testing"
-	"time"
 )
 
-var (
+const (
 	configFile = "config/performance-config.yaml"
 )
 
-// TestCase configures a test case to run the scheduler performance test. Users should be able to
+// testCase configures a test case to run the scheduler performance test. Users should be able to
 // provide this via a YAML file.
 //
 // It specifies nodes and pods in the cluster before running the test. It also specifies the pods to
@@ -47,7 +48,7 @@ var (
 //
 // It also specifies the metrics to be collected after the test. If nothing is specified, default metrics
 // such as scheduling throughput and latencies will be collected.
-type TestCase struct {
+type testCase struct {
 	// description of the test case
 	Desc string
 	// configures nodes in the cluster
@@ -63,6 +64,7 @@ type TestCase struct {
 type nodeCase struct {
 	Num                      int
 	NodeTemplatePath         *string
+	// At most one of the following strategies can be defined. If not specified, default to TrivialNodePrepareStrategy.
 	NodeAllocatableStrategy  *testutils.NodeAllocatableStrategy
 	LabelNodePrepareStrategy *testutils.LabelNodePrepareStrategy
 }
@@ -75,20 +77,17 @@ type podCase struct {
 	PersistentVolumeClaimTemplatePath *string
 }
 
-func TestSchedulerPerformance(t *testing.T) {
-	var tests []TestCase
-	getSpec(&configFile, &tests)
-
+func BenchmarkPerfScheduling(b *testing.B) {
+	tests := getTestCases(configFile)
+	
 	for _, test := range tests {
-		name := fmt.Sprintf("%v/%vNodes/%vPods", test.Desc, test.Nodes.Num, test.InitPods.Num)
-		t.Run(name, func(t *testing.T) {
+		name := fmt.Sprintf("%v/%vNodes/%vInitPods/%vPodsToSchedule", test.Desc, test.Nodes.Num, test.InitPods.Num, test.PodsToSchedule.Num)
+		b.Run(name, func(b *testing.B) {
 			for feature, flag := range test.FeatureGates {
-				defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, feature, flag)()
+				defer featuregatetesting.SetFeatureGateDuringTest(b, utilfeature.DefaultFeatureGate, feature, flag)()
 			}
 
-			var nodeStrategy testutils.PrepareNodeStrategy
-			nodeStrategy = &testutils.TrivialNodePrepareStrategy{}
-
+			var nodeStrategy testutils.PrepareNodeStrategy = &testutils.TrivialNodePrepareStrategy{}
 			if test.Nodes.NodeAllocatableStrategy != nil {
 				nodeStrategy = test.Nodes.NodeAllocatableStrategy
 			} else if test.Nodes.LabelNodePrepareStrategy != nil {
@@ -100,11 +99,10 @@ func TestSchedulerPerformance(t *testing.T) {
 
 			var nodeSpec *v1.Node
 			if test.Nodes.NodeTemplatePath != nil {
-				nodeSpec = &v1.Node{}
-				getSpec(test.Nodes.NodeTemplatePath, nodeSpec)
+				nodeSpec = getNodeSpecFromFile(test.Nodes.NodeTemplatePath)
 			}
 
-			perfScheduling(test.Nodes.Num, test.InitPods.Num, test.PodsToSchedule.Num, nodeStrategy, setupPodStrategy, testPodStrategy, nodeSpec)
+			perfScheduling(test.Nodes.Num, test.InitPods.Num, test.PodsToSchedule.Num, nodeStrategy, setupPodStrategy, testPodStrategy, nodeSpec, b)
 		})
 	}
 }
@@ -112,7 +110,7 @@ func TestSchedulerPerformance(t *testing.T) {
 func perfScheduling(numNodes, numExistingPods, minPods int,
 	nodeStrategy testutils.PrepareNodeStrategy,
 	setupPodStrategy, testPodStrategy testutils.TestPodCreateStrategy,
-	nodeSpec *v1.Node) {
+	nodeSpec *v1.Node, b *testing.B) {
 
 	finalFunc, podInformer, clientset := mustSetupScheduler()
 	defer finalFunc()
@@ -169,19 +167,23 @@ func perfScheduling(numNodes, numExistingPods, minPods int,
 		},
 	})
 
+	// start benchmark
+	b.ResetTimer()
 	config = testutils.NewTestPodCreatorConfig()
 	config.AddStrategy(testNamespace, minPods, testPodStrategy)
 	podCreator = testutils.NewTestPodCreator(clientset, config)
 	podCreator.CreatePods()
 
 	<-completedCh
+
+	// Note: without this line we're taking the overhead of defer() into account.
+	b.StopTimer()
 }
 
 func getPodStrategy(pc podCase) testutils.TestPodCreateStrategy {
 	basePod := makeBasePod()
 	if pc.PodTemplatePath != nil {
-		basePod = &v1.Pod{}
-		getSpec(pc.PodTemplatePath, basePod)
+		basePod = getPodSpecFromFile(pc.PodTemplatePath)
 	}
 	if pc.ReplicationControllerName != nil {
 		return testutils.NewWithControllerCreatePodStrategy(*pc.ReplicationControllerName, basePod)
@@ -190,21 +192,69 @@ func getPodStrategy(pc podCase) testutils.TestPodCreateStrategy {
 		return testutils.NewCustomCreatePodStrategy(basePod)
 	}
 
-	pvTemplate := &v1.PersistentVolume{}
-	getSpec(pc.PersistentVolumeTemplatePath, pvTemplate)
-	pvcTemplate := &v1.PersistentVolumeClaim{}
-	getSpec(pc.PersistentVolumeClaimTemplatePath, pvcTemplate)
+	pvTemplate := getPersistentVolumeSpecFromFile(pc.PersistentVolumeTemplatePath)
+	pvcTemplate := getPersistentVolumeClaimSpecFromFile(pc.PersistentVolumeClaimTemplatePath)
 	return testutils.NewCreatePodWithPersistentVolumeStrategy(pvcTemplate, getCustomVolumeFactory(pvTemplate), basePod)
 }
 
-func getSpec(path *string, spec interface{}) {
+func getTestCases(path string) []testCase {
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		klog.Fatalf("%v", err)
+	}
+	var testCases []testCase
+	if err := yaml.Unmarshal(bytes, &testCases); err != nil {
+		klog.Fatalf("%v", err)
+	}
+	return testCases
+}
+
+func getNodeSpecFromFile(path *string) *v1.Node {
 	bytes, err := ioutil.ReadFile(*path)
 	if err != nil {
 		klog.Fatalf("%v", err)
 	}
-	if err := yaml.Unmarshal(bytes, spec); err != nil {
+	nodeSpec := &v1.Node{}
+	if err := yaml.Unmarshal(bytes, nodeSpec); err != nil {
 		klog.Fatalf("%v", err)
 	}
+	return nodeSpec
+}
+
+func getPodSpecFromFile(path *string) *v1.Pod {
+	bytes, err := ioutil.ReadFile(*path)
+	if err != nil {
+		klog.Fatalf("%v", err)
+	}
+	podSpec := &v1.Pod{}
+	if err := yaml.Unmarshal(bytes, podSpec); err != nil {
+		klog.Fatalf("%v", err)
+	}
+	return podSpec
+}
+
+func getPersistentVolumeSpecFromFile(path *string) *v1.PersistentVolume {
+	bytes, err := ioutil.ReadFile(*path)
+	if err != nil {
+		klog.Fatalf("%v", err)
+	}
+	persistentVolumeSpec := &v1.PersistentVolume{}
+	if err := yaml.Unmarshal(bytes, persistentVolumeSpec); err != nil {
+		klog.Fatalf("%v", err)
+	}
+	return persistentVolumeSpec
+}
+
+func getPersistentVolumeClaimSpecFromFile(path *string) *v1.PersistentVolumeClaim {
+	bytes, err := ioutil.ReadFile(*path)
+	if err != nil {
+		klog.Fatalf("%v", err)
+	}
+	persistentVolumeClaimSpec := &v1.PersistentVolumeClaim{}
+	if err := yaml.Unmarshal(bytes, persistentVolumeClaimSpec); err != nil {
+		klog.Fatalf("%v", err)
+	}
+	return persistentVolumeClaimSpec
 }
 
 func getCustomVolumeFactory(pvTemplate *v1.PersistentVolume) func(id int) *v1.PersistentVolume {
