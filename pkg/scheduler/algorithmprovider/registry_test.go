@@ -133,6 +133,7 @@ func TestApplyFeatureGates(t *testing.T) {
 						{Name: noderesources.FitName},
 						{Name: nodeports.Name},
 						{Name: interpodaffinity.Name},
+						{Name: podtopologyspread.Name},
 					},
 				},
 				Filter: &schedulerapi.PluginSet{
@@ -151,6 +152,7 @@ func TestApplyFeatureGates(t *testing.T) {
 						{Name: volumebinding.Name},
 						{Name: volumezone.Name},
 						{Name: interpodaffinity.Name},
+						{Name: podtopologyspread.Name},
 					},
 				},
 				PreScore: &schedulerapi.PluginSet{
@@ -158,6 +160,7 @@ func TestApplyFeatureGates(t *testing.T) {
 						{Name: interpodaffinity.Name},
 						{Name: defaultpodtopologyspread.Name},
 						{Name: tainttoleration.Name},
+						{Name: podtopologyspread.Name},
 					},
 				},
 				Score: &schedulerapi.PluginSet{
@@ -170,6 +173,7 @@ func TestApplyFeatureGates(t *testing.T) {
 						{Name: nodepreferavoidpods.Name, Weight: 10000},
 						{Name: defaultpodtopologyspread.Name, Weight: 1},
 						{Name: tainttoleration.Name, Weight: 1},
+						{Name: podtopologyspread.Name, Weight: 1},
 					},
 				},
 				Bind: &schedulerapi.PluginSet{
@@ -250,8 +254,7 @@ func TestApplyFeatureGates(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.ResourceLimitsPriorityFunction, test.featuresEnabled)()
-			defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.EvenPodsSpread, test.featuresEnabled)()
-
+			
 			r := NewRegistry()
 			gotConfig := r[schedulerapi.SchedulerDefaultProviderName]
 			if diff := cmp.Diff(test.wantConfig, gotConfig); diff != "" {

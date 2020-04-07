@@ -518,6 +518,7 @@ const (
 
 	// owner: @Huang-Wei
 	// beta: v1.18
+	// GA: v1.19
 	//
 	// Schedule pods evenly across available topology domains.
 	EvenPodsSpread featuregate.Feature = "EvenPodsSpread"
@@ -666,7 +667,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	IPv6DualStack:                                  {Default: false, PreRelease: featuregate.Alpha},
 	EndpointSlice:                                  {Default: true, PreRelease: featuregate.Beta},
 	EndpointSliceProxying:                          {Default: false, PreRelease: featuregate.Alpha},
-	EvenPodsSpread:                                 {Default: true, PreRelease: featuregate.Beta},
+	EvenPodsSpread:                                 {Default: true, PreRelease: featuregate.GA, LockToDefault: true},
 	StartupProbe:                                   {Default: true, PreRelease: featuregate.Beta},
 	AllowInsecureBackendProxy:                      {Default: true, PreRelease: featuregate.Beta},
 	PodDisruptionBudget:                            {Default: true, PreRelease: featuregate.Beta},

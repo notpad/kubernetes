@@ -86,6 +86,7 @@ func getDefaultConfig() *schedulerapi.Plugins {
 				{Name: noderesources.FitName},
 				{Name: nodeports.Name},
 				{Name: interpodaffinity.Name},
+				{Name: podtopologyspread.Name},
 			},
 		},
 		Filter: &schedulerapi.PluginSet{
@@ -104,6 +105,7 @@ func getDefaultConfig() *schedulerapi.Plugins {
 				{Name: volumebinding.Name},
 				{Name: volumezone.Name},
 				{Name: interpodaffinity.Name},
+				{Name: podtopologyspread.Name},
 			},
 		},
 		PreScore: &schedulerapi.PluginSet{
@@ -111,6 +113,7 @@ func getDefaultConfig() *schedulerapi.Plugins {
 				{Name: interpodaffinity.Name},
 				{Name: defaultpodtopologyspread.Name},
 				{Name: tainttoleration.Name},
+				{Name: podtopologyspread.Name},
 			},
 		},
 		Score: &schedulerapi.PluginSet{
@@ -123,6 +126,7 @@ func getDefaultConfig() *schedulerapi.Plugins {
 				{Name: nodepreferavoidpods.Name, Weight: 10000},
 				{Name: defaultpodtopologyspread.Name, Weight: 1},
 				{Name: tainttoleration.Name, Weight: 1},
+				{Name: podtopologyspread.Name, Weight: 1},
 			},
 		},
 		Bind: &schedulerapi.PluginSet{
@@ -145,17 +149,6 @@ func getClusterAutoscalerConfig() *schedulerapi.Plugins {
 }
 
 func applyFeatureGates(config *schedulerapi.Plugins) {
-	// Only add EvenPodsSpread if the feature is enabled.
-	if utilfeature.DefaultFeatureGate.Enabled(features.EvenPodsSpread) {
-		klog.Infof("Registering EvenPodsSpread predicate and priority function")
-		f := schedulerapi.Plugin{Name: podtopologyspread.Name}
-		config.PreFilter.Enabled = append(config.PreFilter.Enabled, f)
-		config.Filter.Enabled = append(config.Filter.Enabled, f)
-		config.PreScore.Enabled = append(config.PreScore.Enabled, f)
-		s := schedulerapi.Plugin{Name: podtopologyspread.Name, Weight: 1}
-		config.Score.Enabled = append(config.Score.Enabled, s)
-	}
-
 	// Prioritizes nodes that satisfy pod's resource limits
 	if utilfeature.DefaultFeatureGate.Enabled(features.ResourceLimitsPriorityFunction) {
 		klog.Infof("Registering resourcelimits priority function")

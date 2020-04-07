@@ -438,11 +438,6 @@ func dropDisabledFields(
 		// does not specify any values for these fields.
 		podSpec.PreemptionPolicy = nil
 	}
-
-	if !utilfeature.DefaultFeatureGate.Enabled(features.EvenPodsSpread) && !topologySpreadConstraintsInUse(oldPodSpec) {
-		// Set TopologySpreadConstraints to nil only if feature is disabled and it is not used
-		podSpec.TopologySpreadConstraints = nil
-	}
 }
 
 // dropDisabledRunAsGroupField removes disabled fields from PodSpec related
